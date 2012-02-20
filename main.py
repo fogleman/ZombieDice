@@ -46,14 +46,13 @@ def print_rolled_dice(dice):
         result.append('%s %s' % (COLORS[color], SYMBOLS[face]))
     print ', '.join(result)
 
-def do_roll(reroll):
+def do_roll(cup, reroll):
     n = 3 - len(reroll)
-    bag = list(DICE)
-    for die in reroll:
-        bag.remove(die)
-    dice = reroll + random.sample(bag, n)
-    result = []
+    dice = random.sample(cup, n)
     for die in dice:
+        cup.remove(die)
+    result = []
+    for die in reroll + dice:
         face = random.choice(FACES[die])
         result.append((die, face))
     return tuple(result)
@@ -84,16 +83,22 @@ def run(players):
         roll = 0
         brains = 0
         shotguns = 0
+        cup = list(DICE)
         reroll = []
+        brain_dice = []
         while True:
             roll += 1
             print 'Round %d, Player %d, Roll %d' % (round, index + 1, roll)
-            dice = do_roll(reroll)
+            if len(cup) < 3 - len(reroll):
+                cup.extend(brain_dice)
+                brain_dice = []
+            dice = do_roll(cup, reroll)
             print_rolled_dice(dice)
             reroll = []
             for color, face in dice:
                 if face == BRAIN:
                     brains += 1
+                    brain_dice.append(color)
                 elif face == SHOTGUN:
                     shotguns += 1
                 else:
